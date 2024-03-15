@@ -22,7 +22,7 @@ public class Beer {
     @Id
     private Integer id;
     private String beerName;
-    private String beerStyle;
+    private BeerStyle beerStyle;
     private String upc;
     private Integer quantityOnHand;
     private BigDecimal price;
