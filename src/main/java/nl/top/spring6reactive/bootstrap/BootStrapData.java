@@ -1,4 +1,4 @@
-package nl.top.spring6reactive;
+package nl.top.spring6reactive.bootstrap;
 
 import lombok.RequiredArgsConstructor;
 import nl.top.spring6reactive.domain.Beer;
