@@ -1,4 +1,4 @@
-package nl.top.spring6reactive.services;
+package nl.top.spring6reactive.controllers;
 
 import nl.top.spring6reactive.domain.BeerStyle;
 import nl.top.spring6reactive.model.BeerDTO;
@@ -11,45 +11,44 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class BeerServiceImplTest {
+class BeerControllerTest {
 
     @Autowired
-    private BeerService beerService;
+    BeerController beerController;
 
     @Test
-    void listBeers() {
-        Flux<BeerDTO> beerDTOFlux = beerService.listBeers();
+    void listBeer() {
+        Flux<BeerDTO> beerDTOFlux = beerController.listBeer();
         StepVerifier
                 .create(beerDTOFlux)
-                .expectNextCount(3)
+                .expectNextCount(4)
                 .verifyComplete();
     }
 
     @Test
     void getBeerById() {
-        Mono<BeerDTO> beerDTOMono = beerService.getBeerById(2);
+        Mono<BeerDTO> beerDTOMono = beerController.getBeerById(3);
         StepVerifier
                 .create(beerDTOMono)
-                .consumeNextWith(beerResponse -> {
-                    assertEquals("Crank", beerResponse.getBeerName());
-                })
+                .consumeNextWith(beerDTO ->assertEquals("Sunshine City", beerDTO.getBeerName()))
                 .verifyComplete();
-
     }
 
+
     @Test
-    void createNewBeer(){
-        Mono<BeerDTO> beerDTOMono = beerService.saveNewBeer(getTestBeer());
+    void createNewBeer() {
+        var newBeer = beerController.createNewBeer(getTestBeer());
         StepVerifier
-                .create(beerDTOMono)
-                .consumeNextWith(beerDTO -> {
-                    assertEquals("Space Dust", beerDTO.getBeerName());
+                .create(newBeer)
+                .consumeNextWith(responseEntity -> {
+                    assertNotNull(responseEntity.getHeaders().getLocation());
+                    assertTrue(responseEntity.getHeaders().getLocation().getPath().endsWith("4"));
+                    assertTrue(responseEntity.getHeaders().getLocation().getPath().contains("/api/v2/beer"));
                 })
                 .verifyComplete();
-
     }
 
     private BeerDTO getTestBeer(){

@@ -3,9 +3,9 @@ package nl.top.spring6reactive.controllers;
 import lombok.RequiredArgsConstructor;
 import nl.top.spring6reactive.model.BeerDTO;
 import nl.top.spring6reactive.services.BeerService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +23,31 @@ public class BeerController {
     }
 
     @GetMapping(BEER_PATH_ID)
-    Mono<BeerDTO> getBeerById(@PathVariable("beerId") Integer beerId) {
+//if pathvariable name is exact match of the name it is optional
+    Mono<BeerDTO> getBeerById(@PathVariable("beerId") Integer beerId) {//re return a mono as we expect only 1 beer
         return beerService.getBeerById(beerId);
+    }
+
+    @PostMapping(BEER_PATH)
+    Mono<ResponseEntity<Void>> createNewBeer(@RequestBody BeerDTO beerDTO) {
+        return beerService.saveNewBeer(beerDTO) //it's been to the process of persistence and returns a savedBeerDTO
+                .map(savedDTO -> ResponseEntity.created(UriComponentsBuilder
+                                .fromHttpUrl("http://localhost:8080/" + BEER_PATH + "/" + savedDTO.getId())
+                                .build().toUri())
+                        .build());//we need to set the header
+    }
+
+    @PutMapping(BEER_PATH_ID)
+    Mono<ResponseEntity<Void>> updateBeer(@PathVariable("beerId") Integer beerId,
+                                          @RequestBody BeerDTO beerDTO) {
+        return beerService.updateBeer(beerId, beerDTO)
+                .map(savedBeerDTO -> ResponseEntity.ok().build());//changing the stream Mono<BeerDTO> into a ResponseEntity
+    }
+
+    @PatchMapping(BEER_PATH_ID)
+    Mono<ResponseEntity<Void>> patchBeer(@PathVariable("beerId") Integer beerId,
+                                         @RequestBody BeerDTO beerDTO) {
+        return beerService.patchBeer(beerId, beerDTO)
+                .map(updatedBeerDTO -> ResponseEntity.ok().build());
     }
 }
