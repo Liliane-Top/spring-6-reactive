@@ -10,12 +10,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+
 @RestController
 @RequiredArgsConstructor
 public class CustomerController {
 
     public static final String CUSTOMER_PATH = "/api/v2/customer";
     public static final String CUSTOMER_PATH_ID = CUSTOMER_PATH + "/{customerId}";
+    public static final String BASE_URL = "http://localhost:8080/";
     private final CustomerService customerService;
 
     @GetMapping(CUSTOMER_PATH)
@@ -31,10 +34,17 @@ public class CustomerController {
     @PostMapping(CUSTOMER_PATH)
     Mono<ResponseEntity<Void>> createNewCustomer(@Validated @RequestBody CustomerDTO customerDTO) {
         return customerService.saveNewCustomer(customerDTO)
-                .map(savedDTO -> ResponseEntity.created(UriComponentsBuilder
-                                .fromHttpUrl("http://localhost:8080/" + CUSTOMER_PATH + "/" + savedDTO.getId())
-                                .build().toUri())
+                .map(savedDTO -> ResponseEntity.created(getCustomerUri(savedDTO.getId()))
                         .build());
+    }
+
+    private URI getCustomerUri(Integer customerId) {
+        return UriComponentsBuilder
+                .fromHttpUrl(BASE_URL)
+                .fromPath(CUSTOMER_PATH)
+                .pathSegment(customerId.toString())
+                .build()
+                .toUri();
     }
 
     @PutMapping(CUSTOMER_PATH_ID)

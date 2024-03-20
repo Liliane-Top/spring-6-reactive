@@ -10,12 +10,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+
 @RestController
 @RequiredArgsConstructor
 public class BeerController {
 
     public static final String BEER_PATH = "/api/v2/beer";
     public static final String BEER_PATH_ID = BEER_PATH + "/{beerId}";
+    public static final String BASE_URL = "http://localhost:8080/";
+
     private final BeerService beerService;
 
     @GetMapping(BEER_PATH)
@@ -32,10 +36,17 @@ public class BeerController {
     @PostMapping(BEER_PATH)
     Mono<ResponseEntity<Void>> createNewBeer(@Validated @RequestBody BeerDTO beerDTO) {
         return beerService.saveNewBeer(beerDTO) //it's been to the process of persistence and returns a savedBeerDTO
-                .map(savedDTO -> ResponseEntity.created(UriComponentsBuilder
-                                .fromHttpUrl("http://localhost:8080/" + BEER_PATH + "/" + savedDTO.getId())
-                                .build().toUri())
+                .map(savedDTO -> ResponseEntity.created(getUri(savedDTO.getId()))
                         .build());//we need to set the header
+    }
+
+    private static URI getUri(Integer beerId) {
+        return UriComponentsBuilder
+                .fromHttpUrl(BASE_URL)
+                .path(BEER_PATH)
+                .pathSegment(beerId.toString())
+                .build()
+                .toUri();
     }
 
     @PutMapping(BEER_PATH_ID)

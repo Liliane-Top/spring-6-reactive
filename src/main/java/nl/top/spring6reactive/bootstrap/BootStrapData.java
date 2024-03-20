@@ -21,11 +21,9 @@ public class BootStrapData implements CommandLineRunner {
     @Override
     public void run(String... args) {
         loadBeerData();
-        beerRepository.count().subscribe(count -> System.out.println("BeerCount is :" + count));
-
         loadCustomerData();
+        beerRepository.count().subscribe(count -> System.out.println("BeerCount is :" + count));
         customerRepository.count().subscribe(count -> System.out.println("CustomerCount is :" + count));
-
     }
 
     private void loadCustomerData() {

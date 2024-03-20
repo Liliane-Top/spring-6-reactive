@@ -16,19 +16,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Beer {
-
-    //no longer JPA annotations as this is specifically spring reactive
-    //this is the pojo to retrieve object from database
-    @Id
+    @Id//this is required otherwise the savedBeer will not have an id
     private Integer id;
     private String beerName;
     private BeerStyle beerStyle;
     private String upc;
     private Integer quantityOnHand;
     private BigDecimal price;
-
-    //feature auditing allows the framework to intercept and add in the Data
-    @CreatedDate
+    @CreatedDate//these annotations are required otherwise this field will be saved to null
     private LocalDateTime createdDate;
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;

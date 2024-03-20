@@ -1,6 +1,5 @@
 package nl.top.spring6reactive.domain;
 
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +17,6 @@ import java.time.LocalDateTime;
 public class Customer {
     @Id
     private Integer id;
-    @Size(min=3, max= 255)
     private String customerName;
     @CreatedDate
     private LocalDateTime createdDate;
