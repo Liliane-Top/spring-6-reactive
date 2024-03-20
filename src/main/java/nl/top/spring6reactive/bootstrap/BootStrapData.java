@@ -3,7 +3,9 @@ package nl.top.spring6reactive.bootstrap;
 import lombok.RequiredArgsConstructor;
 import nl.top.spring6reactive.domain.Beer;
 import nl.top.spring6reactive.domain.BeerStyle;
+import nl.top.spring6reactive.domain.Customer;
 import nl.top.spring6reactive.repositories.BeerRepository;
+import nl.top.spring6reactive.repositories.CustomerRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -14,13 +16,38 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class BootStrapData implements CommandLineRunner {
     private final BeerRepository beerRepository;
+    private final CustomerRepository customerRepository;
 
     @Override
-    public void run(String... args)  {
+    public void run(String... args) {
         loadBeerData();
+        loadCustomerData();
+        beerRepository.count().subscribe(count -> System.out.println("BeerCount is :" + count));
+        customerRepository.count().subscribe(count -> System.out.println("CustomerCount is :" + count));
+    }
 
-        beerRepository.count().subscribe(count -> {
-            System.out.println("Count is :" + count);
+    private void loadCustomerData() {
+        customerRepository.count().subscribe(count -> {
+            if (count == 0) {
+                Customer customer1 = Customer.builder()
+                        .customerName("Liliane Top")
+                        .createdDate(LocalDateTime.now())
+                        .lastModifiedDate(LocalDateTime.now())
+                        .build();
+                Customer customer2 = Customer.builder()
+                        .customerName("Ton Kraak")
+                        .createdDate(LocalDateTime.now())
+                        .lastModifiedDate(LocalDateTime.now())
+                        .build();
+                Customer customer3 = Customer.builder()
+                        .customerName("Robert van Leeuwen")
+                        .createdDate(LocalDateTime.now())
+                        .lastModifiedDate(LocalDateTime.now())
+                        .build();
+                customerRepository.save(customer1).subscribe();
+                customerRepository.save(customer2).subscribe();
+                customerRepository.save(customer3).subscribe();
+            }
         });
     }
 
