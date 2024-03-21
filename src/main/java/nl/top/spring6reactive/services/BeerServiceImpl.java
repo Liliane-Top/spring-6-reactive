@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import nl.top.spring6reactive.mappers.BeerMapper;
 import nl.top.spring6reactive.model.BeerDTO;
 import nl.top.spring6reactive.repositories.BeerRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +28,8 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public Mono<BeerDTO> getBeerById(Integer id) {
         return beerRepository.findById(id)
-                .map(beerMapper::beerToBeerDTO);
+                .map(beerMapper::beerToBeerDTO)
+                .switchIfEmpty(Mono.empty());
     }
 
     @Override
@@ -78,6 +81,13 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public Mono<Void> deleteBeerById(Integer beerId) {
-        return beerRepository.deleteById(beerId);
+        return beerRepository.existsById(beerId)
+                .flatMap(exists -> {
+                    if(exists) {
+                        return beerRepository.deleteById(beerId);
+                    } else {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
+                    }
+                });
     }
 }

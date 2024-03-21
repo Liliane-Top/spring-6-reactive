@@ -45,6 +45,13 @@ class BeerControllerTest {
     }
 
     @Test
+    void getBeerByNonExistingId() {
+        webTestClient.get().uri(BEER_PATH_ID, 10)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     void createNewBeer() {
         webTestClient.post().uri(BEER_PATH)
                 .body(Mono.just(getTestBeer()), BeerDTO.class)
@@ -54,6 +61,19 @@ class BeerControllerTest {
                 .expectHeader().location(BASE_URL + BEER_PATH + "/4");
 
     }
+
+    @Test
+    void createNewBeerWithBadData() {
+        BeerDTO testBeer = getTestBeer();
+        testBeer.setBeerName("");
+
+        webTestClient.post().uri(BEER_PATH)
+                .body(Mono.just(testBeer), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
     private static BeerDTO getTestBeer(){
         return BeerDTO.builder()
                 .beerName("Space Dust")
@@ -67,12 +87,60 @@ class BeerControllerTest {
 
     @Test
     void updateBeer(){
+        BeerDTO testBeer = getTestBeer();
+        testBeer.setBeerName("");
+
         webTestClient.put()
+                .uri(BEER_PATH_ID, 1)
+                .body(Mono.just(testBeer), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+
+    }
+
+    @Test
+    void patchBeer(){
+        webTestClient.patch()
                 .uri(BEER_PATH_ID, 1)
                 .body(Mono.just(getTestBeer()), BeerDTO.class)
                 .header("Content-type", "application/json")
                 .exchange()
-                .expectStatus().isNoContent();
+                .expectStatus().isOk();
+
+    }
+
+    @Test
+    void patchBeerWithBadData(){
+        BeerDTO testBeer = getTestBeer();
+        testBeer.setBeerName("");
+
+        webTestClient.patch()
+                .uri(BEER_PATH_ID, 1)
+                .body(Mono.just(testBeer), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void patchBeerWithIdNotFound(){
+        webTestClient.patch()
+                .uri(BEER_PATH_ID, 99)
+                .body(Mono.just(getTestBeer()), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void updateBeerWithBeerNotFound(){
+        webTestClient.put()
+                .uri(BEER_PATH_ID, 99)
+                .body(Mono.just(getTestBeer()), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
 
     }
 
@@ -83,6 +151,15 @@ class BeerControllerTest {
                 .header("Content-type", "application/json")
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    void deleteBeerWithNonExistingId() {
+        webTestClient.delete()
+                .uri(BEER_PATH_ID, 99)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
 }
