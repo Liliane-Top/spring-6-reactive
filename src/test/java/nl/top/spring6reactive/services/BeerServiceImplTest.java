@@ -2,6 +2,7 @@ package nl.top.spring6reactive.services;
 
 import nl.top.spring6reactive.domain.BeerStyle;
 import nl.top.spring6reactive.model.BeerDTO;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@Order(5)
 class BeerServiceImplTest {
 
     @Autowired
@@ -24,7 +26,7 @@ class BeerServiceImplTest {
         Flux<BeerDTO> beerDTOFlux = beerService.listBeers();
         StepVerifier
                 .create(beerDTOFlux)
-                .expectNextCount(3)
+                .expectNextCount(4)
                 .verifyComplete();
     }
 
@@ -51,7 +53,6 @@ class BeerServiceImplTest {
                 .verifyComplete();
 
     }
-
     private BeerDTO getTestBeer(){
         return BeerDTO.builder()
                 .beerName("Space Dust")
@@ -61,4 +62,5 @@ class BeerServiceImplTest {
                 .upc("ipa")
                 .build();
     }
+
 }

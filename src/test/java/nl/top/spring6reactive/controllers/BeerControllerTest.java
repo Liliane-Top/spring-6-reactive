@@ -19,6 +19,7 @@ import static nl.top.spring6reactive.controllers.BeerController.*;
 @SpringBootTest
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Order(2)
 class BeerControllerTest {
 
     @Autowired
