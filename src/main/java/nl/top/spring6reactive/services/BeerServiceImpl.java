@@ -22,14 +22,15 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public Flux<BeerDTO> listBeers() {
         return beerRepository.findAll()
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(beerMapper::beerToBeerDTO);
     }
 
     @Override
     public Mono<BeerDTO> getBeerById(Integer id) {
         return beerRepository.findById(id)
-                .map(beerMapper::beerToBeerDTO)
-                .switchIfEmpty(Mono.empty());
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .map(beerMapper::beerToBeerDTO);
     }
 
     @Override
@@ -41,6 +42,7 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public Mono<BeerDTO> updateBeer(Integer beerId, BeerDTO beerDTO) {
         return beerRepository.findById(beerId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .map(beerFound ->
                 {
                     beerFound.setBeerName(beerDTO.getBeerName());
@@ -50,13 +52,15 @@ public class BeerServiceImpl implements BeerService {
                     beerFound.setQuantityOnHand(beerDTO.getQuantityOnHand());
                     return beerFound;//now the beer that was returned is now updated with new values
                 }).flatMap(beerRepository::save)//why flatmap I do not understand save the updated version to the DB
-                .map(beerMapper::beerToBeerDTO);//the beer object mapped to a beerDTO which will be returned as mono type
+                .map(beerMapper::beerToBeerDTO);//the beer object mapped to a beerDTO which will be returned as monotype
 
     }
 
     @Override
     public Mono<BeerDTO> patchBeer(Integer beerId, BeerDTO beerDTO) {
         return beerRepository.findById(beerId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Beer with ID " + beerId + " not found")))
                 .map(beerFound ->
                 {
                     if(StringUtils.hasText(beerDTO.getBeerName())){
@@ -71,7 +75,7 @@ public class BeerServiceImpl implements BeerService {
                     if(beerDTO.getQuantityOnHand() != null) {
                         beerFound.setQuantityOnHand(beerDTO.getQuantityOnHand());
                     }
-                    if(beerDTO.getUpc() != null) {
+                    if(StringUtils.hasText(beerDTO.getUpc())) {
                         beerFound.setUpc(beerDTO.getUpc());
                     }
                     return beerFound;
