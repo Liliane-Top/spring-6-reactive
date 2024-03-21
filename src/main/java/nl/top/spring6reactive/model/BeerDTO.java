@@ -1,6 +1,5 @@
 package nl.top.spring6reactive.model;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +20,6 @@ public class BeerDTO {
     private Integer id;
     @Size(min = 3, max = 255)
     private String beerName;
-    @NotBlank
     private BeerStyle beerStyle;
     @Size(max = 25)
     private String upc;
