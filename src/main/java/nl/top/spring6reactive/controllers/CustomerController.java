@@ -18,7 +18,7 @@ public class CustomerController {
 
     public static final String CUSTOMER_PATH = "/api/v2/customer";
     public static final String CUSTOMER_PATH_ID = CUSTOMER_PATH + "/{customerId}";
-    public static final String BASE_URL = "http://localhost:8080/";
+    public static final String BASE_URL = "http://localhost:8080";
     private final CustomerService customerService;
 
     @GetMapping(CUSTOMER_PATH)
@@ -38,10 +38,10 @@ public class CustomerController {
                         .build());
     }
 
-    private URI getCustomerUri(Integer customerId) {
+    private static URI getCustomerUri(Integer customerId) {
         return UriComponentsBuilder
                 .fromHttpUrl(BASE_URL)
-                .fromPath(CUSTOMER_PATH)
+                .path(CUSTOMER_PATH)
                 .pathSegment(customerId.toString())
                 .build()
                 .toUri();
@@ -51,20 +51,20 @@ public class CustomerController {
     Mono<ResponseEntity<Void>> updateCustomer(@PathVariable("customerId") Integer customerId,
                                               @Validated @RequestBody CustomerDTO customerDTO) {
         return customerService.updateCustomer(customerId, customerDTO)
-                .map(response -> ResponseEntity.ok().build());//transforming the Mono into a response entity
+                .map(response -> ResponseEntity.noContent().build());//transforming the Mono into a response entity
     }
 
     @PatchMapping(CUSTOMER_PATH_ID)
     Mono<ResponseEntity<Void>> patchCustomer(@PathVariable("customerId") Integer customerId,
                                               @Validated @RequestBody CustomerDTO customerDTO) {
         return customerService.patchCustomer(customerId, customerDTO)
-                .map(response -> ResponseEntity.ok().build());//transforming the Mono into a response entity
+                .map(response -> ResponseEntity.noContent().build());//transforming the Mono into a response entity
     }
 
     @DeleteMapping(CUSTOMER_PATH_ID)
     Mono<ResponseEntity<Void>> deleteCustomerById(@PathVariable("customerId") Integer customerId) {
         return customerService.deleteCustomerById(customerId)
-                .map(response -> ResponseEntity.noContent().build());
+                .thenReturn(ResponseEntity.noContent().build());
     }
 
 
