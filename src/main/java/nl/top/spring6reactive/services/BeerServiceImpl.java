@@ -85,13 +85,8 @@ public class BeerServiceImpl implements BeerService {
 
     @Override
     public Mono<Void> deleteBeerById(Integer beerId) {
-        return beerRepository.existsById(beerId)
-                .flatMap(exists -> {
-                    if(exists) {
-                        return beerRepository.deleteById(beerId);
-                    } else {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND));
-                    }
-                });
+        return beerRepository.findById(beerId)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(foundCustomer ->beerRepository.deleteById(beerId));
     }
 }

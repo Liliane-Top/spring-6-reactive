@@ -48,15 +48,33 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @Order(3)
+    void getCustomerNotExistingID() {
+        webTestClient.get().uri(CUSTOMER_PATH_ID, 99)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    @Order(2)
     void createNewCustomer() {
         webTestClient.post().uri(CUSTOMER_PATH)
                 .body(Mono.just(getTestCustomer()), CustomerDTO.class)
                 .header("Content-type", "application/json")
                 .exchange()
                 .expectStatus().isCreated()
-                .expectHeader().location(BASE_URL + CUSTOMER_PATH + "/5");
+                .expectHeader().location(BASE_URL + CUSTOMER_PATH + "/4");
 
+    }
+
+    @Test
+    void createNewCustomerWithBadData() {
+        var customer = getTestCustomer();
+        customer.setCustomerName("");
+        webTestClient.post().uri(CUSTOMER_PATH)
+                .body(Mono.just(customer), CustomerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     private static CustomerDTO getTestCustomer() {
@@ -74,7 +92,28 @@ public class CustomerControllerTest {
                 .header("Content-type", "application/json")
                 .exchange()
                 .expectStatus().isNoContent();
+    }
 
+    @Test
+    void updateCustomerNotFound() {
+        webTestClient.put()
+                .uri(CUSTOMER_PATH_ID, 99)
+                .body(Mono.just(getTestCustomer()), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+    @Test
+    void updateCustomerWithBadData() {
+        var customer = getTestCustomer();
+        customer.setCustomerName("");
+
+        webTestClient.put()
+                .uri(CUSTOMER_PATH_ID, 99)
+                .body(Mono.just(customer), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     @Test
@@ -85,10 +124,32 @@ public class CustomerControllerTest {
                 .header("Content-type", "application/json")
                 .exchange()
                 .expectStatus().isNoContent();
-
     }
 
     @Test
+    void patchCustomerNotFound() {
+        webTestClient.patch()
+                .uri(CUSTOMER_PATH_ID, 99)
+                .body(Mono.just(getTestCustomer()), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+    @Test
+    void patchCustomerWithBadData() {
+        var customer = getTestCustomer();
+        customer.setCustomerName("");
+
+        webTestClient.patch()
+                .uri(CUSTOMER_PATH_ID, 1)
+                .body(Mono.just(customer), BeerDTO.class)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    @Order(10)
     void deleteCustomer() {
         webTestClient.delete()
                 .uri(CUSTOMER_PATH_ID, 3)
@@ -96,11 +157,20 @@ public class CustomerControllerTest {
                 .exchange()
                 .expectStatus().isNoContent();
     }
+    @Test
+    void deleteCustomerNotFound() {
+        webTestClient.delete()
+                .uri(CUSTOMER_PATH_ID, 99)
+                .header("Content-type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
 
     //Alternative way of testing
 
     @Autowired
     CustomerController customerController;
+
     @Test
     @Order(4)
     void getCustomerList2() {
@@ -112,7 +182,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void getCustomerById2(){
+    void getCustomerById2() {
         Mono<CustomerDTO> mono = customerController.getCustomerById(1);
         StepVerifier
                 .create(mono)
@@ -123,15 +193,15 @@ public class CustomerControllerTest {
     }
 
     @Test
-    @Order(2)
-    void createNewCustomer2(){
+    @Order(4)
+    void createNewCustomer2() {
         var newCustomer = customerController.createNewCustomer(getTestCustomer());
         StepVerifier
                 .create(newCustomer)
                 .consumeNextWith(responseEntity -> {
                     assertNotNull(responseEntity.getHeaders().getLocation());
-                    assertEquals("/api/v2/customer/4",responseEntity.getHeaders().getLocation().getPath());
-                    assertEquals(responseEntity.getStatusCode().value(), 201 );
+                    assertEquals("/api/v2/customer/5", responseEntity.getHeaders().getLocation().getPath());
+                    assertEquals(responseEntity.getStatusCode().value(), 201);
                 })
                 .verifyComplete();
     }
