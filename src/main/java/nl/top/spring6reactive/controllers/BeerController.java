@@ -18,7 +18,7 @@ public class BeerController {
 
     public static final String BEER_PATH = "/api/v2/beer";
     public static final String BEER_PATH_ID = BEER_PATH + "/{beerId}";
-    public static final String BASE_URL = "http://localhost:8080/";
+    public static final String BASE_URL = "http://localhost:8080";
 
     private final BeerService beerService;
 
@@ -53,7 +53,7 @@ public class BeerController {
     Mono<ResponseEntity<Void>> updateBeer(@PathVariable("beerId") Integer beerId,
                                           @Validated @RequestBody BeerDTO beerDTO) {
         return beerService.updateBeer(beerId, beerDTO)
-                .map(savedBeerDTO -> ResponseEntity.ok().build());//changing the stream Mono<BeerDTO> into a ResponseEntity
+                .map(savedBeerDTO -> ResponseEntity.noContent().build());//changing the stream Mono<BeerDTO> into a ResponseEntity
     }
 
     @PatchMapping(BEER_PATH_ID)
@@ -65,6 +65,7 @@ public class BeerController {
 
     @DeleteMapping(BEER_PATH_ID)
     Mono<ResponseEntity<Void>> deleteBeerById(@PathVariable("beerId") Integer beerId) {
-        return beerService.deleteBeerById(beerId).map(response -> ResponseEntity.noContent().build());
+        return beerService.deleteBeerById(beerId)
+                .thenReturn(ResponseEntity.noContent().build());
     }
 }
